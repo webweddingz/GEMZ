@@ -187,3 +187,153 @@
 
         // --- DESCRIBE CARDS (TABOO STYLING) ---
         { type: "Describe", content: "Get your team to guess: <strong>THE CITY OF REFUGE</strong>", taboo: ["Levite", "Run", "Safety", "Shelter", "Accident"] },
+        { type: "Describe", content: "Get your team to guess: <strong>NOAH'S ARK</strong>", taboo: ["Flood", "Wood", "Animals", "Rain", "Boat"] },
+        { type: "Describe", content: "Get your team to guess: <strong>THE TEN COMMANDMENTS</strong>", taboo: ["Moses", "Stone", "Ten", "Law", "Mount"] },
+        { type: "Describe", content: "Get your team to guess: <strong>DAVID AND GOLIATH</strong>", taboo: ["Giant", "Sling", "Stone", "Shepherd", "Fight"] },
+        { type: "Describe", content: "Get your team to guess: <strong>THE LAST SUPPER</strong>", taboo: ["Jesus", "Bread", "Wine", "Disciples", "Night"] }
+    ];
+
+    let scoreA = 0;
+    let scoreB = 0;
+    let isTeamATurn = true;
+    let timerInterval;
+    let currentCardPoints = 1;
+    let currentCardIndex = -1;
+    let usedCardIndices = [];
+
+    const cardDisplayEl = document.getElementById('cardDisplay');
+    const btnDraw = document.getElementById('btnDraw');
+    const btnReveal = document.getElementById('btnReveal');
+    const btnCorrect = document.getElementById('btnCorrect');
+    const btnWrong = document.getElementById('btnWrong');
+    const timerEl = document.getElementById('timer');
+
+    function drawCard() {
+        // Filter out used cards
+        const availableIndices = gameDeck
+            .map((_, index) => index)
+            .filter(index => !usedCardIndices.includes(index));
+
+        if (availableIndices.length === 0) {
+            cardDisplayEl.innerHTML = `
+                <div class="card-category">All Cards Used</div>
+                <div class="card-content">Reset the game to play again.</div>
+            `;
+            btnDraw.disabled = true;
+            btnReveal.style.display = "none";
+            btnCorrect.disabled = true;
+            btnWrong.disabled = true;
+            return;
+        }
+
+        // Pick random card
+        currentCardIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+        usedCardIndices.push(currentCardIndex);
+        const card = gameDeck[currentCardIndex];
+
+        // Determine points
+        currentCardPoints = card.type.includes("3pt") ? 3 : 1;
+
+        // Render card
+        let html = `<div class="card-category">${card.type}</div>
+                    <div class="card-content">${card.content}</div>`;
+
+        if (card.taboo) {
+            html += `<ul class="taboo-list">`;
+            card.taboo.forEach(word => {
+                html += `<li>${word}</li>`;
+            });
+            html += `</ul>`;
+        }
+
+        if (card.answer) {
+            html += `<div class="answer-box" id="answerBox">${card.answer}</div>`;
+            btnReveal.style.display = "block";
+        } else {
+            btnReveal.style.display = "none";
+        }
+
+        cardDisplayEl.innerHTML = html;
+
+        // Enable scoring buttons
+        btnCorrect.disabled = false;
+        btnWrong.disabled = false;
+        btnDraw.disabled = true;
+
+        // Start timer
+        startTimer();
+    }
+
+    function startTimer() {
+        let timeLeft = 60;
+        timerEl.textContent = timeLeft;
+
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            timerEl.textContent = timeLeft;
+
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                // Auto-fail when time runs out
+                handleScore(false);
+            }
+        }, 1000);
+    }
+
+    function revealAnswer() {
+        const answerBox = document.getElementById('answerBox');
+        if (answerBox) {
+            answerBox.style.display = "block";
+        }
+    }
+
+    function handleScore(isCorrect) {
+        clearInterval(timerInterval);
+        if (isCorrect) {
+            if (isTeamATurn) {
+                scoreA += currentCardPoints;
+                document.getElementById('scoreA').textContent = scoreA;
+            } else {
+                scoreB += currentCardPoints;
+                document.getElementById('scoreB').textContent = scoreB;
+            }
+        }
+        endTurn();
+    }
+
+    function endTurn() {
+        clearInterval(timerInterval);
+        isTeamATurn = !isTeamATurn;
+        document.getElementById('currentTeam').textContent = isTeamATurn ? "Team A" : "Team B";
+        cardDisplayEl.innerHTML = `<div class="card-category">Next Turn</div> <div class="card-content">Hand the device to the next team and press Draw!</div>`;
+        btnDraw.disabled = false;
+        btnReveal.style.display = "none";
+        btnCorrect.disabled = true;
+        btnWrong.disabled = true;
+        timerEl.textContent = "60";
+    }
+
+    function resetGame() {
+        if(confirm("Are you sure you want to reset the current game scores?")) {
+            clearInterval(timerInterval);
+            scoreA = 0;
+            scoreB = 0;
+            isTeamATurn = true;
+            usedCardIndices = [];
+            currentCardIndex = -1;
+            document.getElementById('scoreA').textContent = "0";
+            document.getElementById('scoreB').textContent = "0";
+            document.getElementById('currentTeam').textContent = "Team A";
+            timerEl.textContent = "60";
+            cardDisplayEl.innerHTML = `<div class="card-category">Ready?</div> <div class="card-content">Press "Draw Next Card" to start your turn!</div>`;
+            btnDraw.disabled = false;
+            btnReveal.style.display = "none";
+            btnCorrect.disabled = true;
+            btnWrong.disabled = true;
+        }
+    }
+</script>
+
+</body>
+</html>
