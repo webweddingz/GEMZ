@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gem Diggers App Prototype</title>
+    <title>GEMZ 💎</title>
     <style>
         :root {
             --primary: #2b5876;
@@ -11,6 +11,8 @@
             --accent: #ff9f43;
             --light: #f8f9fa;
             --dark: #2d3436;
+            --success: #2ecc71;
+            --error: #e74c3c;
         }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -31,11 +33,14 @@
             width: 100%;
             max-width: 500px;
             text-align: center;
+            position: relative;
+            overflow: hidden;
         }
         .header h1 {
             margin: 0;
             color: var(--primary);
-            font-size: 28px;
+            font-size: 32px;
+            letter-spacing: 2px;
         }
         .scoreboard {
             display: flex;
@@ -45,12 +50,18 @@
             padding: 10px;
             border-radius: 10px;
             font-weight: bold;
+            font-size: 18px;
         }
         .timer-box {
             font-size: 48px;
             font-weight: bold;
             color: #d63031;
             margin: 15px 0;
+            transition: color 0.3s;
+        }
+        .timer-box.time-low {
+            color: #c0392b;
+            animation: pulse 0.5s infinite;
         }
         .card-display {
             border: 3px solid var(--primary);
@@ -124,13 +135,43 @@
         .btn-reset { background-color: #7f8c8d; color: white; font-size: 14px; padding: 8px; margin-top: 15px; width: 100%; }
         button:active { transform: scale(0.98); }
         button:disabled { background-color: #b2bec3; color: #dfe6e9; cursor: not-allowed; }
+
+        /* Animations */
+        @keyframes flash-green {
+            0%, 100% { background: white; }
+            50% { background: #d5f5e3; }
+        }
+        @keyframes shake-red {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        .flash-success {
+            animation: flash-green 0.6s ease;
+        }
+        .shake-fail {
+            animation: shake-red 0.5s ease;
+        }
+        .score-pop {
+            display: inline-block;
+            animation: pop 0.4s ease;
+        }
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
     </style>
 </head>
 <body>
 
-<div class="app-container">
+<div class="app-container" id="gameContainer">
     <div class="header">
-        <h1>💎 Diggers Digital</h1>
+        <h1>GEMZ 💎</h1>
     </div>
 
     <div class="scoreboard">
@@ -159,31 +200,37 @@
     <button class="btn-reset" onclick="resetGame()">🔄 Reset Match Scores</button>
 </div>
 
+<!-- Sound Effects -->
+<audio id="soundStart" src="https://cdn.pixabay.com/download/audio/2022/03/24/audio_0782a0c7d6.mp3?filename=game-start-6275.mp3"></audio>
+<audio id="soundTimeUp" src="https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8c8a73467.mp3?filename=game-over-arcade-6453.mp3"></audio>
+<audio id="soundCorrect" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_736f7a8062.mp3?filename=success-1-6297.mp3"></audio>
+<audio id="soundWrong" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_34a16f7b73.mp3?filename=error-1-6298.mp3"></audio>
+
 <script>
     const gameDeck = [
         // --- TRIVIA CARDS (1-POINT STANDARD) ---
-        { type: "Trivia (1pt)", content: "Who was the left-handed judge who delivered Israel from Moabite oppression by executing King Eglon?", answer: "Ehud (Judges 3:15)" },
-        { type: "Trivia (1pt)", content: "In what year did the Bible Students officially adopt the scriptural name 'Jehovah's Witnesses' at a convention in Columbus, Ohio?", answer: "1931 (Proclaimers, chap. 11)" },
-        { type: "Trivia (1pt)", content: "In which prominent Middle Eastern river was Jesus baptized by John the Baptist?", answer: "Jordan River (Matthew 3:13)" },
-        { type: "Trivia (1pt)", content: "According to the Genesis account, upon which mountainous region did Noah's ark finally come to rest as the floodwaters receded?", answer: "Mountains of Ararat (Genesis 8:4)" },
-        { type: "Trivia (1pt)", content: "Which major body of water did Jehovah split so that the escaping Israelites could pass through safely on dry ground?", answer: "Red Sea (Exodus 14:21)" },
-        { type: "Trivia (1pt)", content: "Which faithful Moabite woman expressed extraordinary loyalty to her mother-in-law Naomi with the famous words, 'Where you go I will go'?", answer: "Ruth (Ruth 1:16)" },
-        { type: "Trivia (1pt)", content: "Charles Taze Russell published the very first issue of the magazine originally titled Zion's Watch Tower and Herald of Christ's Presence in which year?", answer: "1879 (July 1879)" },
-        { type: "Trivia (1pt)", content: "Which faithful pre-Flood patriarch walked with the true God and was transferred so that he did not see death?", answer: "Enoch (Genesis 5:24 / Hebrews 11:5)" },
-        { type: "Trivia (1pt)", content: "Jesus performed his very first recorded miracle—turning water into fine wine at a wedding feast—in which specific village of Galilee?", answer: "Cana (John 2:1-11)" },
-        { type: "Trivia (1pt)", content: "With how many total men did Jehovah instruct Gideon to retain for battle against the massive host of Midianites?", answer: "300 men (Judges 7:7)" },
+        { type: "Trivia (1pt)", content: "Who was the first Christian martyr, stoned to death for his faith?", answer: "Stephen (Acts 7:54-60)" },
+        { type: "Trivia (1pt)", content: "What is the last book of the Hebrew Scriptures (Old Testament)?", answer: "Malachi" },
+        { type: "Trivia (1pt)", content: "Which apostle was known as 'the doubter' until he saw the resurrected Jesus?", answer: "Thomas (John 20:24-29)" },
+        { type: "Trivia (1pt)", content: "What city did Paul and Silas preach in while imprisoned, causing an earthquake?", answer: "Philippi (Acts 16:25-26)" },
+        { type: "Trivia (1pt)", content: "Who was the mother of Samuel, who dedicated him to Jehovah’s service?", answer: "Hannah (1 Samuel 1:20-28)" },
+        { type: "Trivia (1pt)", content: "What was the name of the rich man who begged Abraham for relief from torment?", answer: "No name given (Luke 16:19-31)" },
+        { type: "Trivia (1pt)", content: "Which king of Judah was healed of a serious illness after praying to Jehovah?", answer: "Hezekiah (2 Kings 20:1-6)" },
+        { type: "Trivia (1pt)", content: "What miracle did Elisha perform for a widow who had only a small jar of oil?", answer: "Multiplied her oil (2 Kings 4:1-7)" },
+        { type: "Trivia (1pt)", content: "Who was the Roman governor who presided over Jesus’ trial?", answer: "Pontius Pilate (Matthew 27:11-26)" },
+        { type: "Trivia (1pt)", content: "What is the shortest verse in the Bible?", answer: "“Jesus wept.” (John 11:35)" },
 
         // --- TRIVIA CARDS (3-POINT DEEP RESEARCH) ---
-        { type: "Trivia (3pt Deep)", content: "What was the name of the first month of the Jewish sacred calendar before it was renamed 'Nisan' after the Babylonian exile?", answer: "Abib (Exodus 13:4)" },
-        { type: "Trivia (3pt Deep)", content: "The Apostle John was exiled to the rocky island of Patmos where he received the visions of Revelation. In which specific sea is Patmos located?", answer: "Aegean Sea (Revelation 1:9)" },
-        { type: "Trivia (3pt Deep)", content: "During the reign of which Medo-Persian ruler was Daniel thrown into the lions' pit because he continued praying to Jehovah?", answer: "Darius the Mede (Daniel 6:6-9)" },
-        { type: "Trivia (3pt Deep)", content: "According to the opening verse of the book of Job, in what specific land did this faithful and blameless man reside?", answer: "The land of Uz (Job 1:1)" },
-        { type: "Trivia (3pt Deep)", content: "Before traveling to Jerusalem to lead the rebuilding of its broken walls, Nehemiah held the high-ranking position of cupbearer to which Persian king?", answer: "Artaxerxes I (Nehemiah 2:1)" },
-        { type: "Trivia (3pt Deep)", content: "In Paul's second letter to Timothy, the apostle speaks with deep appreciation about the unhypocritical faith that first dwelt in which two female relatives of Timothy?", answer: "Lois and Eunice (2 Timothy 1:5)" },
-        { type: "Trivia (3pt Deep)", content: "When 'The Golden Age' was first published in October 1919, who was appointed by J.F. Rutherford to serve as its very first chief editor?", answer: "Clayton J. Woodworth" },
-        { type: "Trivia (3pt Deep)", content: "During Paul's tumultuous voyage to Rome, his ship struggled against the wind and sought shelter by running under the lee of a tiny island named Cauda. This island sits off the southern coast of which massive Mediterranean island?", answer: "Crete (Acts 27:16)" },
-        { type: "Trivia (3pt Deep)", content: "When Paul was shipwrecked on Melita (Malta), Acts 28:7 mentions a hospitable man named Publius who entertained the survivors. What specific official title did Publius hold on the island?", answer: "The Chief Man of the Island (Acts 28:7)" },
-        { type: "Trivia (3pt Deep)", content: "Which faithful prophet was commanded by Jehovah to marry a woman named Gomer who later became unfaithful, using his painful domestic situation as a visual illustration?", answer: "Hosea (Hosea 1:2-3)" },
+        { type: "Trivia (3pt Deep)", content: "In what year did the Governing Body of Jehovah’s Witnesses move its headquarters to Warwick, New York?", answer: "2016" },
+        { type: "Trivia (3pt Deep)", content: "What was the original name of the *Watchtower* magazine when first published in 1879?", answer: "Zion’s Watch Tower and Herald of Christ’s Presence" },
+        { type: "Trivia (3pt Deep)", content: "Which Bible character said, 'As for me and my house, we will serve Jehovah'?", answer: "Joshua (Joshua 24:15)" },
+        { type: "Trivia (3pt Deep)", content: "What was the name of the angel who appeared to Mary to announce Jesus’ birth?", answer: "Gabriel (Luke 1:26-38)" },
+        { type: "Trivia (3pt Deep)", content: "How many books are in the Christian Greek Scriptures (New Testament)?", answer: "27" },
+        { type: "Trivia (3pt Deep)", content: "Which prophet was fed by ravens during a drought?", answer: "Elijah (1 Kings 17:2-6)" },
+        { type: "Trivia (3pt Deep)", content: "What was the name of the lame man Peter healed at the temple gate called Beautiful?", answer: "Not named in Acts 3:1-10" },
+        { type: "Trivia (3pt Deep)", content: "Who was the first person to see the resurrected Jesus according to John 20?", answer: "Mary Magdalene (John 20:11-18)" },
+        { type: "Trivia (3pt Deep)", content: "What language did Jesus most likely speak in everyday life?", answer: "Aramaic" },
+        { type: "Trivia (3pt Deep)", content: "Which disciple replaced Judas Iscariot after his death?", answer: "Matthias (Acts 1:23-26)" },
 
         // --- DESCRIBE CARDS (TABOO STYLING) ---
         { type: "Describe", content: "Get your team to guess: <strong>THE CITY OF REFUGE</strong>", taboo: ["Levite", "Run", "Safety", "Shelter", "Accident"] },
@@ -207,9 +254,22 @@
     const btnCorrect = document.getElementById('btnCorrect');
     const btnWrong = document.getElementById('btnWrong');
     const timerEl = document.getElementById('timer');
+    const gameContainer = document.getElementById('gameContainer');
+
+    // Sound elements
+    const soundStart = document.getElementById('soundStart');
+    const soundTimeUp = document.getElementById('soundTimeUp');
+    const soundCorrect = document.getElementById('soundCorrect');
+    const soundWrong = document.getElementById('soundWrong');
+
+    function playSound(soundEl) {
+        soundEl.currentTime = 0;
+        soundEl.play().catch(e => console.log("Audio play failed:", e));
+    }
 
     function drawCard() {
-        // Filter out used cards
+        playSound(soundStart);
+
         const availableIndices = gameDeck
             .map((_, index) => index)
             .filter(index => !usedCardIndices.includes(index));
@@ -226,15 +286,12 @@
             return;
         }
 
-        // Pick random card
         currentCardIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
         usedCardIndices.push(currentCardIndex);
         const card = gameDeck[currentCardIndex];
 
-        // Determine points
         currentCardPoints = card.type.includes("3pt") ? 3 : 1;
 
-        // Render card
         let html = `<div class="card-category">${card.type}</div>
                     <div class="card-content">${card.content}</div>`;
 
@@ -254,28 +311,30 @@
         }
 
         cardDisplayEl.innerHTML = html;
-
-        // Enable scoring buttons
         btnCorrect.disabled = false;
         btnWrong.disabled = false;
         btnDraw.disabled = true;
 
-        // Start timer
         startTimer();
     }
 
     function startTimer() {
         let timeLeft = 60;
         timerEl.textContent = timeLeft;
+        timerEl.classList.remove('time-low');
 
         clearInterval(timerInterval);
         timerInterval = setInterval(() => {
             timeLeft--;
             timerEl.textContent = timeLeft;
 
+            if (timeLeft <= 10) {
+                timerEl.classList.add('time-low');
+            }
+
             if (timeLeft <= 0) {
                 clearInterval(timerInterval);
-                // Auto-fail when time runs out
+                playSound(soundTimeUp);
                 handleScore(false);
             }
         }, 1000);
@@ -290,20 +349,32 @@
 
     function handleScore(isCorrect) {
         clearInterval(timerInterval);
+        timerEl.classList.remove('time-low');
+
         if (isCorrect) {
+            playSound(soundCorrect);
+            gameContainer.classList.add('flash-success');
+            setTimeout(() => gameContainer.classList.remove('flash-success'), 600);
+
             if (isTeamATurn) {
                 scoreA += currentCardPoints;
-                document.getElementById('scoreA').textContent = scoreA;
+                const scoreEl = document.getElementById('scoreA');
+                scoreEl.innerHTML = `<span class="score-pop">${scoreA}</span>`;
             } else {
                 scoreB += currentCardPoints;
-                document.getElementById('scoreB').textContent = scoreB;
+                const scoreEl = document.getElementById('scoreB');
+                scoreEl.innerHTML = `<span class="score-pop">${scoreB}</span>`;
             }
+        } else {
+            playSound(soundWrong);
+            gameContainer.classList.add('shake-fail');
+            setTimeout(() => gameContainer.classList.remove('shake-fail'), 500);
         }
-        endTurn();
+
+        setTimeout(endTurn, 800);
     }
 
     function endTurn() {
-        clearInterval(timerInterval);
         isTeamATurn = !isTeamATurn;
         document.getElementById('currentTeam').textContent = isTeamATurn ? "Team A" : "Team B";
         cardDisplayEl.innerHTML = `<div class="card-category">Next Turn</div> <div class="card-content">Hand the device to the next team and press Draw!</div>`;
@@ -326,6 +397,7 @@
             document.getElementById('scoreB').textContent = "0";
             document.getElementById('currentTeam').textContent = "Team A";
             timerEl.textContent = "60";
+            timerEl.classList.remove('time-low');
             cardDisplayEl.innerHTML = `<div class="card-category">Ready?</div> <div class="card-content">Press "Draw Next Card" to start your turn!</div>`;
             btnDraw.disabled = false;
             btnReveal.style.display = "none";
