@@ -42,6 +42,11 @@
             font-size: 32px;
             letter-spacing: 2px;
         }
+        .sound-hint {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
         .scoreboard {
             display: flex;
             justify-content: space-between;
@@ -172,6 +177,7 @@
 <div class="app-container" id="gameContainer">
     <div class="header">
         <h1>GEMZ 💎</h1>
+        <div class="sound-hint">🔊 Tap “Draw Next Card” to enable sound</div>
     </div>
 
     <div class="scoreboard">
@@ -200,37 +206,69 @@
     <button class="btn-reset" onclick="resetGame()">🔄 Reset Match Scores</button>
 </div>
 
-<!-- Sound Effects -->
-<audio id="soundStart" src="https://cdn.pixabay.com/download/audio/2022/03/24/audio_0782a0c7d6.mp3?filename=game-start-6275.mp3"></audio>
-<audio id="soundTimeUp" src="https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8c8a73467.mp3?filename=game-over-arcade-6453.mp3"></audio>
-<audio id="soundCorrect" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_736f7a8062.mp3?filename=success-1-6297.mp3"></audio>
-<audio id="soundWrong" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_34a16f7b73.mp3?filename=error-1-6298.mp3"></audio>
+<!-- Sound Effects (reliable direct links) -->
+<audio id="soundStart" preload="auto">
+    <source src="https://www.soundjay.com/buttons/sounds/button-30.mp3" type="audio/mpeg">
+</audio>
+<audio id="soundTimeUp" preload="auto">
+    <source src="https://www.soundjay.com/misc/sounds/fail-buzzer-01.mp3" type="audio/mpeg">
+</audio>
+<audio id="soundCorrect" preload="auto">
+    <source src="https://www.soundjay.com/misc/sounds/magic-chime-01.mp3" type="audio/mpeg">
+</audio>
+<audio id="soundWrong" preload="auto">
+    <source src="https://www.soundjay.com/misc/sounds/fail-trombone-01.mp3" type="audio/mpeg">
+</audio>
 
 <script>
     const gameDeck = [
-        // --- TRIVIA CARDS (1-POINT STANDARD) ---
+        // --- ORIGINAL 1-POINT TRIVIA (10) ---
+        { type: "Trivia (1pt)", content: "Who was the left-handed judge who delivered Israel from Moabite oppression by executing King Eglon?", answer: "Ehud (Judges 3:15)" },
+        { type: "Trivia (1pt)", content: "In what year did the Bible Students officially adopt the scriptural name 'Jehovah's Witnesses' at a convention in Columbus, Ohio?", answer: "1931 (Proclaimers, chap. 11)" },
+        { type: "Trivia (1pt)", content: "In which prominent Middle Eastern river was Jesus baptized by John the Baptist?", answer: "Jordan River (Matthew 3:13)" },
+        { type: "Trivia (1pt)", content: "According to the Genesis account, upon which mountainous region did Noah's ark finally come to rest as the floodwaters receded?", answer: "Mountains of Ararat (Genesis 8:4)" },
+        { type: "Trivia (1pt)", content: "Which major body of water did Jehovah split so that the escaping Israelites could pass through safely on dry ground?", answer: "Red Sea (Exodus 14:21)" },
+        { type: "Trivia (1pt)", content: "Which faithful Moabite woman expressed extraordinary loyalty to her mother-in-law Naomi with the famous words, 'Where you go I will go'?", answer: "Ruth (Ruth 1:16)" },
+        { type: "Trivia (1pt)", content: "Charles Taze Russell published the very first issue of the magazine originally titled Zion's Watch Tower and Herald of Christ's Presence in which year?", answer: "1879 (July 1879)" },
+        { type: "Trivia (1pt)", content: "Which faithful pre-Flood patriarch walked with the true God and was transferred so that he did not see death?", answer: "Enoch (Genesis 5:24 / Hebrews 11:5)" },
+        { type: "Trivia (1pt)", content: "Jesus performed his very first recorded miracle—turning water into fine wine at a wedding feast—in which specific village of Galilee?", answer: "Cana (John 2:1-11)" },
+        { type: "Trivia (1pt)", content: "With how many total men did Jehovah instruct Gideon to retain for battle against the massive host of Midianites?", answer: "300 men (Judges 7:7)" },
+
+        // --- ORIGINAL 3-POINT DEEP TRIVIA (10) ---
+        { type: "Trivia (3pt Deep)", content: "What was the name of the first month of the Jewish sacred calendar before it was renamed 'Nisan' after the Babylonian exile?", answer: "Abib (Exodus 13:4)" },
+        { type: "Trivia (3pt Deep)", content: "The Apostle John was exiled to the rocky island of Patmos where he received the visions of Revelation. In which specific sea is Patmos located?", answer: "Aegean Sea (Revelation 1:9)" },
+        { type: "Trivia (3pt Deep)", content: "During the reign of which Medo-Persian ruler was Daniel thrown into the lions' pit because he continued praying to Jehovah?", answer: "Darius the Mede (Daniel 6:6-9)" },
+        { type: "Trivia (3pt Deep)", content: "According to the opening verse of the book of Job, in what specific land did this faithful and blameless man reside?", answer: "The land of Uz (Job 1:1)" },
+        { type: "Trivia (3pt Deep)", content: "Before traveling to Jerusalem to lead the rebuilding of its broken walls, Nehemiah held the high-ranking position of cupbearer to which Persian king?", answer: "Artaxerxes I (Nehemiah 2:1)" },
+        { type: "Trivia (3pt Deep)", content: "In Paul's second letter to Timothy, the apostle speaks with deep appreciation about the unhypocritical faith that first dwelt in which two female relatives of Timothy?", answer: "Lois and Eunice (2 Timothy 1:5)" },
+        { type: "Trivia (3pt Deep)", content: "When 'The Golden Age' was first published in October 1919, who was appointed by J.F. Rutherford to serve as its very first chief editor?", answer: "Clayton J. Woodworth" },
+        { type: "Trivia (3pt Deep)", content: "During Paul's tumultuous voyage to Rome, his ship struggled against the wind and sought shelter by running under the lee of a tiny island named Cauda. This island sits off the southern coast of which massive Mediterranean island?", answer: "Crete (Acts 27:16)" },
+        { type: "Trivia (3pt Deep)", content: "When Paul was shipwrecked on Melita (Malta), Acts 28:7 mentions a hospitable man named Publius who entertained the survivors. What specific official title did Publius hold on the island?", answer: "The Chief Man of the Island (Acts 28:7)" },
+        { type: "Trivia (3pt Deep)", content: "Which faithful prophet was commanded by Jehovah to marry a woman named Gomer who later became unfaithful, using his painful domestic situation as a visual illustration?", answer: "Hosea (Hosea 1:2-3)" },
+
+        // --- NEW 1-POINT TRIVIA (10) ---
         { type: "Trivia (1pt)", content: "Who was the first Christian martyr, stoned to death for his faith?", answer: "Stephen (Acts 7:54-60)" },
         { type: "Trivia (1pt)", content: "What is the last book of the Hebrew Scriptures (Old Testament)?", answer: "Malachi" },
         { type: "Trivia (1pt)", content: "Which apostle was known as 'the doubter' until he saw the resurrected Jesus?", answer: "Thomas (John 20:24-29)" },
         { type: "Trivia (1pt)", content: "What city did Paul and Silas preach in while imprisoned, causing an earthquake?", answer: "Philippi (Acts 16:25-26)" },
         { type: "Trivia (1pt)", content: "Who was the mother of Samuel, who dedicated him to Jehovah’s service?", answer: "Hannah (1 Samuel 1:20-28)" },
-        { type: "Trivia (1pt)", content: "What was the name of the rich man who begged Abraham for relief from torment?", answer: "No name given (Luke 16:19-31)" },
         { type: "Trivia (1pt)", content: "Which king of Judah was healed of a serious illness after praying to Jehovah?", answer: "Hezekiah (2 Kings 20:1-6)" },
         { type: "Trivia (1pt)", content: "What miracle did Elisha perform for a widow who had only a small jar of oil?", answer: "Multiplied her oil (2 Kings 4:1-7)" },
         { type: "Trivia (1pt)", content: "Who was the Roman governor who presided over Jesus’ trial?", answer: "Pontius Pilate (Matthew 27:11-26)" },
         { type: "Trivia (1pt)", content: "What is the shortest verse in the Bible?", answer: "“Jesus wept.” (John 11:35)" },
+        { type: "Trivia (1pt)", content: "Who denied Jesus three times before the rooster crowed?", answer: "Peter (Matthew 26:69-75)" },
 
-        // --- TRIVIA CARDS (3-POINT DEEP RESEARCH) ---
+        // --- NEW 3-POINT DEEP TRIVIA (10) ---
         { type: "Trivia (3pt Deep)", content: "In what year did the Governing Body of Jehovah’s Witnesses move its headquarters to Warwick, New York?", answer: "2016" },
         { type: "Trivia (3pt Deep)", content: "What was the original name of the *Watchtower* magazine when first published in 1879?", answer: "Zion’s Watch Tower and Herald of Christ’s Presence" },
         { type: "Trivia (3pt Deep)", content: "Which Bible character said, 'As for me and my house, we will serve Jehovah'?", answer: "Joshua (Joshua 24:15)" },
         { type: "Trivia (3pt Deep)", content: "What was the name of the angel who appeared to Mary to announce Jesus’ birth?", answer: "Gabriel (Luke 1:26-38)" },
         { type: "Trivia (3pt Deep)", content: "How many books are in the Christian Greek Scriptures (New Testament)?", answer: "27" },
         { type: "Trivia (3pt Deep)", content: "Which prophet was fed by ravens during a drought?", answer: "Elijah (1 Kings 17:2-6)" },
-        { type: "Trivia (3pt Deep)", content: "What was the name of the lame man Peter healed at the temple gate called Beautiful?", answer: "Not named in Acts 3:1-10" },
         { type: "Trivia (3pt Deep)", content: "Who was the first person to see the resurrected Jesus according to John 20?", answer: "Mary Magdalene (John 20:11-18)" },
         { type: "Trivia (3pt Deep)", content: "What language did Jesus most likely speak in everyday life?", answer: "Aramaic" },
         { type: "Trivia (3pt Deep)", content: "Which disciple replaced Judas Iscariot after his death?", answer: "Matthias (Acts 1:23-26)" },
+        { type: "Trivia (3pt Deep)", content: "What was the name of the ship that carried Charles Taze Russell and associates on their first overseas preaching tour in 1891?", answer: "Not specified in standard JW histories (trick question)" },
 
         // --- DESCRIBE CARDS (TABOO STYLING) ---
         { type: "Describe", content: "Get your team to guess: <strong>THE CITY OF REFUGE</strong>", taboo: ["Levite", "Run", "Safety", "Shelter", "Accident"] },
@@ -247,6 +285,7 @@
     let currentCardPoints = 1;
     let currentCardIndex = -1;
     let usedCardIndices = [];
+    let soundEnabled = false;
 
     const cardDisplayEl = document.getElementById('cardDisplay');
     const btnDraw = document.getElementById('btnDraw');
@@ -256,18 +295,34 @@
     const timerEl = document.getElementById('timer');
     const gameContainer = document.getElementById('gameContainer');
 
-    // Sound elements
     const soundStart = document.getElementById('soundStart');
     const soundTimeUp = document.getElementById('soundTimeUp');
     const soundCorrect = document.getElementById('soundCorrect');
     const soundWrong = document.getElementById('soundWrong');
 
+    function ensureSoundEnabled() {
+        if (!soundEnabled) {
+            soundEnabled = true;
+            // Try to unlock audio on mobile
+            [soundStart, soundTimeUp, soundCorrect, soundWrong].forEach(s => {
+                s.load();
+                s.volume = 0.7;
+            });
+        }
+    }
+
     function playSound(soundEl) {
-        soundEl.currentTime = 0;
-        soundEl.play().catch(e => console.log("Audio play failed:", e));
+        if (!soundEnabled) return;
+        try {
+            soundEl.currentTime = 0;
+            soundEl.play().catch(() => {});
+        } catch (e) {
+            // Ignore autoplay errors
+        }
     }
 
     function drawCard() {
+        ensureSoundEnabled();
         playSound(soundStart);
 
         const availableIndices = gameDeck
